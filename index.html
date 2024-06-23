@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Town Judge Game</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .resident {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find the Town Judge!</h1>
+        <p>Enter the resident ID to check if they are the town judge:</p>
+        <form id="residentForm">
+            <input type="number" id="residentId" placeholder="Enter Resident ID" required>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="result"></p>
+        
+        <h2>Residents and Trust Relationships:</h2>
+        <div id="residentsList"></div>
+    </div>
+
+    <script>
+        // Add your JavaScript code here
+        const residentsList = document.getElementById('residentsList');
+        const resultMessage = document.getElementById('result');
+
+        // Fetch residents and their trust relationships from backend
+        fetch('http://localhost:5000/residents')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Residents:', data); // Debugging message
+            data.forEach(resident => {
+                const residentDiv = document.createElement('div');
+                residentDiv.classList.add('resident');
+                residentDiv.textContent = `Resident ${resident.id} trusts: ${resident.trusts.join(', ')}`;
+                residentsList.appendChild(residentDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // Form submission handler
+        const residentForm = document.getElementById('residentForm');
+        residentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const residentId = residentIdInput.value;
+
+            fetch('http://localhost:5000/check_town_judge', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'resident_id': residentId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data); // Debugging message
+                if (data.is_town_judge) {
+                    resultMessage.textContent = 'Congratulations! You found the town judge.';
+                } else {
+                    resultMessage.textContent = 'Sorry, that is not the town judge. Try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
